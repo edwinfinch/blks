@@ -1,0 +1,42 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "Edwin Finch",
+    "longName": "BLKS",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/blks-menu.png",
+                "menuIcon": true,
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/bt-icon.png",
+                "name": "IMAGE_BT_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/background.png",
+                "name": "IMAGE_BASE",
+                "type": "png"
+            },
+            {
+                "characterRegex": "[0-9]",
+                "file": "fonts/impact.ttf",
+                "name": "FONT_IMPACT_48",
+                "type": "font"
+            }
+        ]
+    },
+    "shortName": "BLKS",
+    "uuid": "05cfd6f5-bd16-4d25-a902-2f9fe8539872",
+    "versionCode": 1,
+    "versionLabel": "1.0.0-rls",
+    "watchapp": {
+        "watchface": true
+    }
+}
