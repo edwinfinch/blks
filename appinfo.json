@@ -25,6 +25,11 @@
                 "type": "png"
             },
             {
+                "file": "fonts/impact.ttf",
+                "name": "FONT_IMPACT_18",
+                "type": "font"
+            },
+            {
                 "characterRegex": "[0-9]",
                 "file": "fonts/impact.ttf",
                 "name": "FONT_IMPACT_48",
@@ -35,7 +40,7 @@
     "shortName": "BLKS",
     "uuid": "05cfd6f5-bd16-4d25-a902-2f9fe8539872",
     "versionCode": 1,
-    "versionLabel": "1.0.0-rls",
+    "versionLabel": "2.0",
     "watchapp": {
         "watchface": true
     }

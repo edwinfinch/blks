@@ -1,14 +1,5 @@
 #include <pebble.h>
-	
-Window *window;
-TextLayer *hour_1, *hour_2, *minute_1, *minute_2;
-BitmapLayer *background_layer, *bt_image_layer;
-GBitmap *background_image, *bt_image;
-Layer *battery_layer;
-AppTimer *charge_timer;
-bool cancelled = 0;
-int battery_percent;
-bool invert;
+#include "elements.h"
 	
 static TextLayer* text_layer_init(GRect location)
 {
@@ -27,6 +18,7 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 	static char min_2_buf[] = "2";
 	static char hour_1_buf[] = "1";
 	static char hour_2_buf[] = "2";
+	static char date_buf[] = "Thu.";
 	
 	int fixmin1 = minute/10;
 	int fixmin2 = minute%10;
@@ -52,6 +44,9 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 	text_layer_set_text(minute_2, min_2_buf);
 	text_layer_set_text(hour_1, hour_1_buf);
 	text_layer_set_text(hour_2, hour_2_buf);
+	
+	strftime(date_buf, sizeof(date_buf), "%a", t);
+	text_layer_set_text(date_layer, date_buf);
 }
 
 void battery_proc(Layer *layer, GContext *ctx){
@@ -107,6 +102,18 @@ void battery_handler(BatteryChargeState charge){
 void bt_handler(bool connected){
 	layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), !connected);
 }
+
+void tap(AccelAxisType axis, int32_t direction){
+	if(showing_date){
+		layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), false);
+		layer_set_hidden(text_layer_get_layer(date_layer), true);
+	}
+	else{
+		layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), true);
+		layer_set_hidden(text_layer_get_layer(date_layer), false);
+	}
+	showing_date = !showing_date;
+}
 	
 void window_load(Window *window){
 	Layer *window_layer = window_get_root_layer(window);
@@ -131,9 +138,19 @@ void window_load(Window *window){
 	minute_2 = text_layer_init(GRect(97, 85, 28, 50));
 	layer_add_child(window_layer, text_layer_get_layer(minute_2));
 	
+	date_layer = text_layer_init(GRect(0, 65, 144, 168));
+	text_layer_set_font(date_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMPACT_18)));
+	text_layer_set_text_color(date_layer, GColorBlack);
+	layer_add_child(window_layer, text_layer_get_layer(date_layer));
+	
+	layer_set_hidden(text_layer_get_layer(date_layer), true);
+	
 	battery_layer = layer_create(GRect(0, 0, 144, 168));
 	layer_set_update_proc(battery_layer, battery_proc);
 	layer_add_child(window_layer, battery_layer);
+	
+	theme = inverter_layer_create(GRect(0, 0, 144, 168));
+	layer_add_child(window_layer, inverter_layer_get_layer(theme));
 	
 	struct tm *t;
   	time_t temp;        
@@ -156,6 +173,7 @@ void window_unload(Window *window){
 	text_layer_destroy(minute_2);
 	bitmap_layer_destroy(bt_image_layer);
 	bitmap_layer_destroy(background_layer);
+	inverter_layer_destroy(theme);
 }
 	
 void init(){
@@ -167,6 +185,7 @@ void init(){
 	tick_timer_service_subscribe(MINUTE_UNIT, &tick_handler);
 	battery_state_service_subscribe(battery_handler);
 	bluetooth_connection_service_subscribe(bt_handler);
+	accel_tap_service_subscribe(&tap);
 	
 	background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BASE);
 	bt_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BT_ICON);
