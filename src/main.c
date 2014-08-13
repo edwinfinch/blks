@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include "elements.h"
+void animation_callback(void *data);
 	
 static TextLayer* text_layer_init(GRect location)
 {
@@ -11,9 +12,14 @@ static TextLayer* text_layer_init(GRect location)
 	return layer;
 }
 
+void fire_animation(){
+	animation_timer = app_timer_register(10, animation_callback, NULL);
+}
+
 void tick_handler(struct tm *t, TimeUnits units_changed){
 	int minute = t->tm_min;
 	int hour = t->tm_hour;
+	int seconds = t->tm_sec;
 	static char min_1_buf[] = "1";
 	static char min_2_buf[] = "2";
 	static char hour_1_buf[] = "1";
@@ -47,6 +53,14 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 	
 	strftime(date_buf, sizeof(date_buf), "%a", t);
 	text_layer_set_text(date_layer, date_buf);
+	
+	if(seconds == 59){
+		//Animation is only 720 milliseconds long so we need to make sure
+		//that there isn't any showing of minutes/hours change. Handled simply by delay.
+		psleep(300);
+		second_stage = 0;
+		fire_animation();
+	}
 }
 
 void battery_proc(Layer *layer, GContext *ctx){
@@ -114,6 +128,25 @@ void tap(AccelAxisType axis, int32_t direction){
 	}
 	showing_date = !showing_date;
 }
+
+void animation_callback(void *data){
+	public_radius++;
+	if(second_stage == 1){
+		public_radius -= 2;
+	}
+	if(public_radius == 80){
+		second_stage = 1;
+	}
+	if(public_radius != 0){
+		fire_animation();
+	}
+	layer_mark_dirty(circle_layer);
+}
+
+void circle_proc(Layer *layer, GContext *ctx){
+	graphics_context_set_fill_color(ctx, GColorWhite);
+	graphics_fill_circle(ctx, GPoint(72, 76), public_radius+19);
+}
 	
 void window_load(Window *window){
 	Layer *window_layer = window_get_root_layer(window);
@@ -122,9 +155,13 @@ void window_load(Window *window){
 	bitmap_layer_set_bitmap(background_layer, background_image);
 	layer_add_child(window_layer, bitmap_layer_get_layer(background_layer));
 	
+	circle_layer = layer_create(GRect(0, 0, 144, 168));
+	layer_set_update_proc(circle_layer, circle_proc);
+	layer_add_child(window_layer, circle_layer);
+	
 	bt_image_layer = bitmap_layer_create(GRect(0, -8, 144, 168));
 	bitmap_layer_set_bitmap(bt_image_layer, bt_image);
-	layer_add_child(window_layer, bitmap_layer_get_layer(bt_image_layer));
+	layer_add_child(window_layer, bitmap_layer_get_layer(bt_image_layer));	
 	
 	hour_1 = text_layer_init(GRect(22, 8, 28, 50));
 	layer_add_child(window_layer, text_layer_get_layer(hour_1));
@@ -174,6 +211,8 @@ void window_unload(Window *window){
 	bitmap_layer_destroy(bt_image_layer);
 	bitmap_layer_destroy(background_layer);
 	inverter_layer_destroy(theme);
+	layer_destroy(battery_layer);
+	layer_destroy(circle_layer);
 }
 	
 void init(){
@@ -182,7 +221,7 @@ void init(){
 		.load = window_load,
 		.unload = window_unload,
 	});
-	tick_timer_service_subscribe(MINUTE_UNIT, &tick_handler);
+	tick_timer_service_subscribe(SECOND_UNIT, &tick_handler);
 	battery_state_service_subscribe(battery_handler);
 	bluetooth_connection_service_subscribe(bt_handler);
 	accel_tap_service_subscribe(&tap);

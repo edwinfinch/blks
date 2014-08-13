@@ -16,3 +16,10 @@ bool invert;
 InverterLayer *theme;
 
 bool showing_date = 0;
+
+//Animation stuff.
+Layer *circle_layer;
+int animation_runs = 0;
+int public_radius = 0;
+bool second_stage = 0;
+AppTimer *animation_timer;
