@@ -69,7 +69,7 @@ int get_minute_change(){
 	int fixmin = minute+1;
 	int fixhour = 0;
 	bool hourIsDiff = 0;
-	if(fixmin > 60){
+	if(fixmin == 60){
 		fixmin = 0;
 		fixhour++;
 		if(fixhour > 23){
