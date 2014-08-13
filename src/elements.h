@@ -14,6 +14,8 @@ bool invert;
 //End battery stuff
 
 bool showing_date = 0;
+int minute = 0;
+int hour = 0;
 
 Layer *circle_layer;
 

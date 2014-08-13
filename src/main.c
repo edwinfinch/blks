@@ -32,21 +32,78 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int 
     animation_schedule((Animation*) anim);
 }
 
-void animate(){
-	animate_layer(text_layer_get_layer(cov_1), &initial_1, &final_1, 700, 300);
-	animate_layer(text_layer_get_layer(cov_2), &initial_2, &final_2, 700, 300);
-	animate_layer(text_layer_get_layer(cov_3), &initial_3, &final_3, 700, 300);
-	animate_layer(text_layer_get_layer(cov_4), &initial_4, &final_4, 700, 300);
+void animate(bool cov1, bool cov2, bool cov3, bool cov4){
+	if(cov1){
+		animate_layer(text_layer_get_layer(cov_1), &initial_1, &final_1, 700, 300);
+	}
+	if(cov2){
+		animate_layer(text_layer_get_layer(cov_2), &initial_2, &final_2, 700, 300);
+	}
+	if(cov3){
+		animate_layer(text_layer_get_layer(cov_3), &initial_3, &final_3, 700, 300);
+	}
+	if(cov4){
+		animate_layer(text_layer_get_layer(cov_4), &initial_4, &final_4, 700, 300);
+	}
 		
-	animate_layer(text_layer_get_layer(cov_1), &final_1, &initial_1, 700, 1010);
-	animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, 1010);
-	animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, 1010);
-	animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, 1010);
+	if(cov1){
+		animate_layer(text_layer_get_layer(cov_1), &final_1, &initial_1, 700, 1010);
+	}
+	if(cov2){
+		animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, 1010);
+	}
+	if(cov3){
+		animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, 1010);
+	}
+	if(cov4){
+		animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, 1010);
+	}
+}
+
+int get_minute_change(){
+	/*
+	Adaptive minute change means that it will only animate
+	the numbers that are changing. Easy fix.
+	*/
+	int mode = -1;
+	int fixmin = minute+1;
+	int fixhour = 0;
+	bool hourIsDiff = 0;
+	if(fixmin > 60){
+		fixmin = 0;
+		fixhour++;
+		if(fixhour > 23){
+			fixhour = 0;
+			hourIsDiff = 1;
+		}
+	}
+	
+	if(hourIsDiff){
+		if(hour == 9){
+			mode = 4;
+		}
+		else if(hour == 23){
+			mode = 4;
+		}
+		else{
+			mode = 3;
+		}
+		return mode;
+	}
+	else{
+		if(minute%10 == 9){
+			mode = 2;
+		}
+		else{
+			mode = 1;
+		}
+		return mode;
+	}
 }
 
 void tick_handler(struct tm *t, TimeUnits units_changed){
-	int minute = t->tm_min;
-	int hour = t->tm_hour;
+	minute = t->tm_min;
+	hour = t->tm_hour;
 	int seconds = t->tm_sec;
 	static char min_1_buf[] = "1";
 	static char min_2_buf[] = "2";
@@ -83,7 +140,25 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 	text_layer_set_text(date_layer, date_buf);
 	
 	if(seconds == 59){
-		animate();
+		int mode = get_minute_change();
+		switch(mode){
+			case 1:
+				animate(false, false, false, true);
+				break;
+			case 2:
+				animate(false, false, true, true);
+				break;
+			case 3:
+				animate(false, true, true, true);
+				break;
+			case 4:
+				animate(true, true, true, true);
+				break;
+			//Catch
+			default:
+				animate(true, true, true, true);
+				break;
+		}
 	}
 }
 
@@ -157,7 +232,7 @@ void tap(AccelAxisType axis, int32_t direction){
 	
 void circle_proc(Layer *layer, GContext *ctx){
 	graphics_context_set_fill_color(ctx, GColorBlack);
-	graphics_fill_circle(ctx, GPoint(72, 76), 19);
+	graphics_fill_circle(ctx, GPoint(72, 76), 21);
 }
 
 void window_load(Window *window){
