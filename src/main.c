@@ -74,8 +74,8 @@ int get_minute_change(){
 		fixhour++;
 		if(fixhour > 23){
 			fixhour = 0;
-			hourIsDiff = 1;
 		}
+		hourIsDiff = 1;
 	}
 	
 	if(hourIsDiff){
