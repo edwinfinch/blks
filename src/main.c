@@ -216,6 +216,7 @@ void battery_handler(BatteryChargeState charge){
 
 void bt_handler(bool connected){
 	layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), !connected);
+	layer_set_hidden(text_layer_get_layer(date_layer), true);
 }
 
 void tap(AccelAxisType axis, int32_t direction){
