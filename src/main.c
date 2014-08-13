@@ -32,31 +32,41 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int 
     animation_schedule((Animation*) anim);
 }
 
-void animate(bool cov1, bool cov2, bool cov3, bool cov4){
-	if(cov1){
-		animate_layer(text_layer_get_layer(cov_1), &initial_1, &final_1, 700, 300);
-	}
-	if(cov2){
-		animate_layer(text_layer_get_layer(cov_2), &initial_2, &final_2, 700, 300);
-	}
-	if(cov3){
-		animate_layer(text_layer_get_layer(cov_3), &initial_3, &final_3, 700, 300);
-	}
-	if(cov4){
-		animate_layer(text_layer_get_layer(cov_4), &initial_4, &final_4, 700, 300);
+void animate(bool cov1, bool cov2, bool cov3, bool cov4, bool boot){
+	if(!boot){
+		if(cov1){
+			animate_layer(text_layer_get_layer(cov_1), &initial_1, &final_1, 700, 300);
+		}
+		if(cov2){
+			animate_layer(text_layer_get_layer(cov_2), &initial_2, &final_2, 700, 300);
+		}
+		if(cov3){
+			animate_layer(text_layer_get_layer(cov_3), &initial_3, &final_3, 700, 300);
+		}
+		if(cov4){
+			animate_layer(text_layer_get_layer(cov_4), &initial_4, &final_4, 700, 300);
+		}
 	}
 		
+	int wait_time;
+	if(boot){
+		wait_time = 300;
+	}
+	else{
+		wait_time = 1010;
+	}
+	
 	if(cov1){
-		animate_layer(text_layer_get_layer(cov_1), &final_1, &initial_1, 700, 1010);
+		animate_layer(text_layer_get_layer(cov_1), &final_1, &initial_1, 700, wait_time);
 	}
 	if(cov2){
-		animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, 1010);
+		animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, wait_time+200);
 	}
 	if(cov3){
-		animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, 1010);
+		animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, wait_time+400);
 	}
 	if(cov4){
-		animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, 1010);
+		animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, wait_time+600);
 	}
 }
 
@@ -143,20 +153,20 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 		int mode = get_minute_change();
 		switch(mode){
 			case 1:
-				animate(false, false, false, true);
+				animate(false, false, false, true, false);
 				break;
 			case 2:
-				animate(false, false, true, true);
+				animate(false, false, true, true, false);
 				break;
 			case 3:
-				animate(false, true, true, true);
+				animate(false, true, true, true, false);
 				break;
 			case 4:
-				animate(true, true, true, true);
+				animate(true, true, true, true, false);
 				break;
 			//Catch
 			default:
-				animate(true, true, true, true);
+				animate(true, true, true, true, false);
 				break;
 		}
 	}
@@ -215,6 +225,7 @@ void battery_handler(BatteryChargeState charge){
 }
 
 void bt_handler(bool connected){
+	public_connection = connected;
 	layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), !connected);
 	layer_set_hidden(text_layer_get_layer(date_layer), true);
 }
@@ -225,7 +236,9 @@ void tap(AccelAxisType axis, int32_t direction){
 		layer_set_hidden(text_layer_get_layer(date_layer), true);
 	}
 	else{
-		layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), true);
+		if(public_connection){
+			layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), true);
+		}
 		layer_set_hidden(text_layer_get_layer(date_layer), false);
 	}
 	showing_date = !showing_date;
@@ -244,10 +257,10 @@ void window_load(Window *window){
 	final_3 = GRect(19, 90, COVER_W, COVER_L);
 	final_4 = GRect(95, 90, COVER_W, COVER_L);
 
-	initial_1 = GRect(19, 14, 1, 1);
-	initial_2 = GRect(95, 14, 1, 1);
-	initial_3 = GRect(19, 90, 1, 1);
-	initial_4 = GRect(95, 90, 1, 1);
+	initial_1 = GRect(19, 14, COVER_W, 1);
+	initial_2 = GRect(95, 14, COVER_W, 1);
+	initial_3 = GRect(19, 90, COVER_W, 1);
+	initial_4 = GRect(95, 90, COVER_W, 1);
 	
 	background_layer = bitmap_layer_create(GRect(0, 0, 144, 168));
 	bitmap_layer_set_bitmap(background_layer, background_image);
@@ -273,19 +286,19 @@ void window_load(Window *window){
 	minute_2 = text_layer_init(GRect(97, 85, 28, 50));
 	layer_add_child(window_layer, text_layer_get_layer(minute_2));
 	
-	cov_1 = text_layer_init(GRect(19, 14, 1, 1));
+	cov_1 = text_layer_init(final_1);
 	text_layer_set_background_color(cov_1, GColorWhite);
 	layer_add_child(window_layer, text_layer_get_layer(cov_1));
 	
-	cov_2 = text_layer_init(GRect(95, 14, 1, 1));
+	cov_2 = text_layer_init(final_2);
 	text_layer_set_background_color(cov_2, GColorWhite);
 	layer_add_child(window_layer, text_layer_get_layer(cov_2));
 	
-	cov_3 = text_layer_init(GRect(19, 90, 1, 1));
+	cov_3 = text_layer_init(final_3);
 	text_layer_set_background_color(cov_3, GColorWhite);
 	layer_add_child(window_layer, text_layer_get_layer(cov_3));
 	
-	cov_4 = text_layer_init(GRect(95, 90, 1, 1));
+	cov_4 = text_layer_init(final_4);
 	text_layer_set_background_color(cov_4, GColorWhite);
 	layer_add_child(window_layer, text_layer_get_layer(cov_4));
 	
@@ -312,6 +325,8 @@ void window_load(Window *window){
 	
 	bool hello = bluetooth_connection_service_peek();
 	bt_handler(hello);
+	
+	animate(1, 1, 1, 1, 1);
 }
 
 void window_unload(Window *window){
