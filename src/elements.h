@@ -13,13 +13,17 @@ int battery_percent;
 bool invert;
 //End battery stuff
 
-InverterLayer *theme;
-
 bool showing_date = 0;
 
-//Animation stuff.
 Layer *circle_layer;
-int animation_runs = 0;
-int public_radius = 0;
-bool second_stage = 0;
-AppTimer *animation_timer;
+
+//Animation stuff.
+TextLayer *cov_1, *cov_2, *cov_3, *cov_4;
+#define COVER_W 31
+#define COVER_L 46
+	
+//"Initializer element is not constant"
+//Like fuck off
+	
+GRect final_1, final_2, final_3, final_4;
+GRect initial_1, initial_2, initial_3, initial_4;

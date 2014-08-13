@@ -12,8 +12,36 @@ static TextLayer* text_layer_init(GRect location)
 	return layer;
 }
 
-void fire_animation(){
-	animation_timer = app_timer_register(10, animation_callback, NULL);
+void stopped(Animation *anim, bool finished, void *context)
+{
+    property_animation_destroy((PropertyAnimation*) anim);
+}
+ 
+void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int delay)
+{
+    PropertyAnimation *anim = property_animation_create_layer_frame(layer, start, finish);
+     
+    animation_set_duration((Animation*) anim, duration);
+    animation_set_delay((Animation*) anim, delay);
+     
+    AnimationHandlers handlers = {
+        .stopped = (AnimationStoppedHandler) stopped
+    };
+    animation_set_handlers((Animation*) anim, handlers, NULL);
+     
+    animation_schedule((Animation*) anim);
+}
+
+void animate(){
+	animate_layer(text_layer_get_layer(cov_1), &initial_1, &final_1, 700, 300);
+	animate_layer(text_layer_get_layer(cov_2), &initial_2, &final_2, 700, 300);
+	animate_layer(text_layer_get_layer(cov_3), &initial_3, &final_3, 700, 300);
+	animate_layer(text_layer_get_layer(cov_4), &initial_4, &final_4, 700, 300);
+		
+	animate_layer(text_layer_get_layer(cov_1), &final_1, &initial_1, 700, 1010);
+	animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, 1010);
+	animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, 1010);
+	animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, 1010);
 }
 
 void tick_handler(struct tm *t, TimeUnits units_changed){
@@ -55,11 +83,7 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 	text_layer_set_text(date_layer, date_buf);
 	
 	if(seconds == 59){
-		//Animation is only 720 milliseconds long so we need to make sure
-		//that there isn't any showing of minutes/hours change. Handled simply by delay.
-		psleep(300);
-		second_stage = 0;
-		fire_animation();
+		animate();
 	}
 }
 
@@ -130,28 +154,24 @@ void tap(AccelAxisType axis, int32_t direction){
 	}
 	showing_date = !showing_date;
 }
-
-void animation_callback(void *data){
-	public_radius++;
-	if(second_stage == 1){
-		public_radius -= 2;
-	}
-	if(public_radius == 80){
-		second_stage = 1;
-	}
-	if(public_radius != 0){
-		fire_animation();
-	}
-	layer_mark_dirty(circle_layer);
-}
-
+	
 void circle_proc(Layer *layer, GContext *ctx){
 	graphics_context_set_fill_color(ctx, GColorBlack);
-	graphics_fill_circle(ctx, GPoint(72, 76), public_radius+19);
+	graphics_fill_circle(ctx, GPoint(72, 76), 19);
 }
-	
+
 void window_load(Window *window){
 	Layer *window_layer = window_get_root_layer(window);
+	
+	final_1 = GRect(19, 14, COVER_W, COVER_L);
+	final_2 = GRect(95, 14, COVER_W, COVER_L);
+	final_3 = GRect(19, 90, COVER_W, COVER_L);
+	final_4 = GRect(95, 90, COVER_W, COVER_L);
+
+	initial_1 = GRect(19, 14, 1, 1);
+	initial_2 = GRect(95, 14, 1, 1);
+	initial_3 = GRect(19, 90, 1, 1);
+	initial_4 = GRect(95, 90, 1, 1);
 	
 	background_layer = bitmap_layer_create(GRect(0, 0, 144, 168));
 	bitmap_layer_set_bitmap(background_layer, background_image);
@@ -163,7 +183,7 @@ void window_load(Window *window){
 	
 	bt_image_layer = bitmap_layer_create(GRect(0, -8, 144, 168));
 	bitmap_layer_set_bitmap(bt_image_layer, bt_image);
-	layer_add_child(window_layer, bitmap_layer_get_layer(bt_image_layer));	
+	layer_add_child(window_layer, bitmap_layer_get_layer(bt_image_layer));
 	
 	hour_1 = text_layer_init(GRect(22, 8, 28, 50));
 	layer_add_child(window_layer, text_layer_get_layer(hour_1));
@@ -177,6 +197,22 @@ void window_load(Window *window){
 	minute_2 = text_layer_init(GRect(97, 85, 28, 50));
 	layer_add_child(window_layer, text_layer_get_layer(minute_2));
 	
+	cov_1 = text_layer_init(GRect(19, 14, 1, 1));
+	text_layer_set_background_color(cov_1, GColorWhite);
+	layer_add_child(window_layer, text_layer_get_layer(cov_1));
+	
+	cov_2 = text_layer_init(GRect(95, 14, 1, 1));
+	text_layer_set_background_color(cov_2, GColorWhite);
+	layer_add_child(window_layer, text_layer_get_layer(cov_2));
+	
+	cov_3 = text_layer_init(GRect(19, 90, 1, 1));
+	text_layer_set_background_color(cov_3, GColorWhite);
+	layer_add_child(window_layer, text_layer_get_layer(cov_3));
+	
+	cov_4 = text_layer_init(GRect(95, 90, 1, 1));
+	text_layer_set_background_color(cov_4, GColorWhite);
+	layer_add_child(window_layer, text_layer_get_layer(cov_4));
+	
 	date_layer = text_layer_init(GRect(0, 65, 144, 168));
 	text_layer_set_font(date_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMPACT_18)));
 	text_layer_set_text_color(date_layer, GColorWhite);
@@ -187,9 +223,6 @@ void window_load(Window *window){
 	battery_layer = layer_create(GRect(0, 0, 144, 168));
 	layer_set_update_proc(battery_layer, battery_proc);
 	layer_add_child(window_layer, battery_layer);
-	
-	//theme = inverter_layer_create(GRect(0, 0, 144, 168));
-	//layer_add_child(window_layer, inverter_layer_get_layer(theme));
 	
 	struct tm *t;
   	time_t temp;        
@@ -212,9 +245,7 @@ void window_unload(Window *window){
 	text_layer_destroy(minute_2);
 	bitmap_layer_destroy(bt_image_layer);
 	bitmap_layer_destroy(background_layer);
-	//inverter_layer_destroy(theme);
 	layer_destroy(battery_layer);
-	layer_destroy(circle_layer);
 }
 	
 void init(){
@@ -237,6 +268,7 @@ void deinit(){
 	tick_timer_service_unsubscribe();
 	battery_state_service_unsubscribe();
 	bluetooth_connection_service_unsubscribe();
+	accel_tap_service_unsubscribe();
 	gbitmap_destroy(background_image);
 	gbitmap_destroy(bt_image);
 }
