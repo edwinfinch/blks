@@ -33,6 +33,9 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int 
 }
 
 void animate(bool cov1, bool cov2, bool cov3, bool cov4, bool boot){
+	if(seconds == 59){
+		return;
+	}
 	if(!boot){
 		if(cov1){
 			animate_layer(text_layer_get_layer(cov_1), &initial_1, &final_1, 700, 300);
@@ -59,14 +62,23 @@ void animate(bool cov1, bool cov2, bool cov3, bool cov4, bool boot){
 	if(cov1){
 		animate_layer(text_layer_get_layer(cov_1), &final_1, &initial_1, 700, wait_time);
 	}
+	if(boot){
+		wait_time += 200;
+	}
 	if(cov2){
-		animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, wait_time+200);
+		animate_layer(text_layer_get_layer(cov_2), &final_2, &initial_2, 700, wait_time);
+	}
+	if(boot){
+		wait_time += 200;
 	}
 	if(cov3){
-		animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, wait_time+400);
+		animate_layer(text_layer_get_layer(cov_3), &final_3, &initial_3, 700, wait_time);
+	}
+	if(boot){
+		wait_time += 200;
 	}
 	if(cov4){
-		animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, wait_time+600);
+		animate_layer(text_layer_get_layer(cov_4), &final_4, &initial_4, 700, wait_time);
 	}
 }
 
@@ -114,7 +126,7 @@ int get_minute_change(){
 void tick_handler(struct tm *t, TimeUnits units_changed){
 	minute = t->tm_min;
 	hour = t->tm_hour;
-	int seconds = t->tm_sec;
+	seconds = t->tm_sec;
 	static char min_1_buf[] = "1";
 	static char min_2_buf[] = "2";
 	static char hour_1_buf[] = "1";
@@ -232,13 +244,13 @@ void bt_handler(bool connected){
 
 void tap(AccelAxisType axis, int32_t direction){
 	if(showing_date){
-		layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), false);
+		if(public_connection){
+			layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), false);
+		}
 		layer_set_hidden(text_layer_get_layer(date_layer), true);
 	}
 	else{
-		if(public_connection){
-			layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), true);
-		}
+		layer_set_hidden(bitmap_layer_get_layer(bt_image_layer), true);
 		layer_set_hidden(text_layer_get_layer(date_layer), false);
 	}
 	showing_date = !showing_date;

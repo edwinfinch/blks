@@ -40,7 +40,7 @@
     "shortName": "BLKS",
     "uuid": "05cfd6f5-bd16-4d25-a902-2f9fe8539872",
     "versionCode": 1,
-    "versionLabel": "2.04",
+    "versionLabel": "2.05",
     "watchapp": {
         "watchface": true
     }
