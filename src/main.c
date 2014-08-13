@@ -5,7 +5,7 @@ void animation_callback(void *data);
 static TextLayer* text_layer_init(GRect location)
 {
 	TextLayer *layer = text_layer_create(location);
-	text_layer_set_text_color(layer, GColorWhite);
+	text_layer_set_text_color(layer, GColorBlack);
 	text_layer_set_background_color(layer, GColorClear);
 	text_layer_set_text_alignment(layer, GTextAlignmentCenter);
 	text_layer_set_font(layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMPACT_48)));
@@ -64,6 +64,8 @@ void tick_handler(struct tm *t, TimeUnits units_changed){
 }
 
 void battery_proc(Layer *layer, GContext *ctx){
+	graphics_context_set_fill_color(ctx, GColorWhite);
+	graphics_context_set_stroke_color(ctx, GColorWhite);
 	int height = 158;
 	int circle_radius = 4;
 	int k, l;
@@ -144,7 +146,7 @@ void animation_callback(void *data){
 }
 
 void circle_proc(Layer *layer, GContext *ctx){
-	graphics_context_set_fill_color(ctx, GColorWhite);
+	graphics_context_set_fill_color(ctx, GColorBlack);
 	graphics_fill_circle(ctx, GPoint(72, 76), public_radius+19);
 }
 	
@@ -177,7 +179,7 @@ void window_load(Window *window){
 	
 	date_layer = text_layer_init(GRect(0, 65, 144, 168));
 	text_layer_set_font(date_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMPACT_18)));
-	text_layer_set_text_color(date_layer, GColorBlack);
+	text_layer_set_text_color(date_layer, GColorWhite);
 	layer_add_child(window_layer, text_layer_get_layer(date_layer));
 	
 	layer_set_hidden(text_layer_get_layer(date_layer), true);
@@ -186,8 +188,8 @@ void window_load(Window *window){
 	layer_set_update_proc(battery_layer, battery_proc);
 	layer_add_child(window_layer, battery_layer);
 	
-	theme = inverter_layer_create(GRect(0, 0, 144, 168));
-	layer_add_child(window_layer, inverter_layer_get_layer(theme));
+	//theme = inverter_layer_create(GRect(0, 0, 144, 168));
+	//layer_add_child(window_layer, inverter_layer_get_layer(theme));
 	
 	struct tm *t;
   	time_t temp;        
@@ -210,7 +212,7 @@ void window_unload(Window *window){
 	text_layer_destroy(minute_2);
 	bitmap_layer_destroy(bt_image_layer);
 	bitmap_layer_destroy(background_layer);
-	inverter_layer_destroy(theme);
+	//inverter_layer_destroy(theme);
 	layer_destroy(battery_layer);
 	layer_destroy(circle_layer);
 }
