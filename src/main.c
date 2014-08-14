@@ -1,3 +1,10 @@
+/*
+BLKS
+Edwin Finch
+
+Design by Philipp Weder
+*/
+
 #include <pebble.h>
 #include "elements.h"
 void animation_callback(void *data);
@@ -330,7 +337,7 @@ void window_load(Window *window){
   	temp = time(NULL);        
   	t = localtime(&temp);
 	
-	tick_handler(t, MINUTE_UNIT);
+	tick_handler(t, SECOND_UNIT);
 	
 	BatteryChargeState bat = battery_state_service_peek();
 	battery_handler(bat);
