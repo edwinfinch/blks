@@ -40,7 +40,7 @@ void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int 
 }
 
 void animate(bool cov1, bool cov2, bool cov3, bool cov4, bool boot){
-	if(seconds == 59){
+	if(seconds == 59 && boot == 1){
 		return;
 	}
 	if(!boot){
